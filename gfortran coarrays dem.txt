@@ -1,0 +1,39 @@
+ian@ian-Latitude-3190-2-in-1:~/Downloads$ gfortran coa.f90
+coa.f90:7:33:
+
+    7 | ter(len=80) :: greeting[*] ! scalar coarray
+      |                         1
+
+Fatal Error: Coarrays disabled at (1), use ‘-fcoarray=’ to enable
+compilation terminated.
+ian@ian-Latitude-3190-2-in-1:~/Downloads$ gfortran coa.f90 -fcoarray=single
+ian@ian-Latitude-3190-2-in-1:~/Downloads$ ./a.out
+Enter your greeting: hello to all
+Greetings hello to all from image 1
+ian@ian-Latitude-3190-2-in-1:~/Downloads$ cat coa.f90
+! Created by Tobias Burnus 2010.
+! Edited by Ian Martin Ajzenszmidt, Melbourne Australa 2023
+
+program Hello_World
+  implicit none
+  integer :: i  ! Local variable
+  character(len=80) :: greeting[*] ! scalar coarray
+  ! Note: "greeting" is the local variable while "greeting[<index>]"
+  ! accesses the variable on a remote image
+ 
+  ! Interact with the user on Image 1
+  if (this_image() == 1) then
+    write(*,'(a)',advance='no') 'Enter your greeting: '
+    read(*,'(a)') greeting
+ 
+    ! Distribute information to other images
+    do i = 2, num_images()
+      greeting[i] = greeting 
+   end do
+  end if
+ 
+  sync all ! Barrier to make sure the data has arrived
+ 
+  ! I/O from all nodes
+  write(*,'(3a,i0)') 'Greetings ',trim(greeting),' from image ', this_image()
+end program Hello_world
