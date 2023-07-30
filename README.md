@@ -1,2 +1,2 @@
-# gfortran-coarrays-
+# gfortran-coarrays
 gfortran coarrrays
